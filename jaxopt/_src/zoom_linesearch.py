@@ -40,9 +40,7 @@ def _cubicmin(a, fa, fpa, b, fb, c, fc):
   A, B = _dot(d1, jnp.array([fb - fa - C * db, fc - fa - C * dc])) / denom
 
   radical = B * B - 3. * A * C
-  xmin = a + (-B + jnp.sqrt(radical)) / (3. * A)
-
-  return xmin
+  return a + (-B + jnp.sqrt(radical)) / (3. * A)
 
 
 def _quadmin(a, fa, fpa, b, fb):
@@ -50,20 +48,20 @@ def _quadmin(a, fa, fpa, b, fb):
   C = fpa
   db = b - a
   B = (fb - D - C * db) / (db ** 2)
-  xmin = a - C / (2. * B)
-  return xmin
+  return a - C / (2. * B)
 
 
 def _binary_replace(replace_bit, original_dict, new_dict, keys=None):
   if keys is None:
     keys = new_dict.keys()
-  out = dict()
-  for key in keys:
-    #out[key] = jnp.where(replace_bit, new_dict[key], original_dict[key])
-    out[key] = tree_map(lambda x, y: jnp.where(replace_bit, x, y),
-                        new_dict[key],
-                        original_dict[key])
-  return out
+  return {
+      key: tree_map(
+          lambda x, y: jnp.where(replace_bit, x, y),
+          new_dict[key],
+          original_dict[key],
+      )
+      for key in keys
+  }
 
 
 class _ZoomState(NamedTuple):

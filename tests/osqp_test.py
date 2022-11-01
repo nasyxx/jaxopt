@@ -130,7 +130,7 @@ class BoxOSQPTest(test_util.JaxoptTestCase):
     atol = 1e-2
     eps = 1e-4
 
-    if "none" == derivative_with_respect_to:
+    if derivative_with_respect_to == "none":
       params, state = osqp_run(Q, c, A_eq, G, b, h)
       self.assertLessEqual(state.error, tol)
       assert state.status == BoxOSQP.SOLVED
@@ -145,19 +145,19 @@ class BoxOSQPTest(test_util.JaxoptTestCase):
       mu, phi = params.dual_ineq
       return KKTSolution(params.primal, params.dual_eq, (mu[b_idx:], phi[b_idx:]))
 
-    if "obj" == derivative_with_respect_to:
+    if derivative_with_respect_to == "obj":
       solve_run_c = lambda c: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)
       check_grads(solve_run_c, args=(c,), order=1, modes=['rev'], eps=eps, atol=atol)
       solve_run_Q = lambda Q: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)
       check_grads(solve_run_Q, args=(Q,), order=1, modes=['rev'], eps=eps, atol=atol)
 
-    if "eq" == derivative_with_respect_to:
+    if derivative_with_respect_to == "eq":
       solve_run_A_eq = lambda A_eq: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)
       check_grads(solve_run_A_eq, args=(A_eq,), order=1, modes=['rev'], eps=eps, atol=atol)
       solve_run_b = lambda b: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)
       check_grads(solve_run_b, args=(b,), order=1, modes=['rev'], eps=eps, atol=atol)
 
-    if "ineq" == derivative_with_respect_to:
+    if derivative_with_respect_to == "ineq":
       solve_run_G = lambda G: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)
       check_grads(solve_run_G, args=(G,), order=1, modes=['rev'], eps=eps, atol=atol)
       solve_run_h = lambda h: keep_ineq_only(osqp_run(Q, c, A_eq, G, b, h).params)

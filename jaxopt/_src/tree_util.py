@@ -122,10 +122,7 @@ def tree_l2_norm(tree_x, squared=False):
   """Compute the l2 norm ||tree_x||."""
   squared_tree = tree_map(jnp.square, tree_x)
   sqnorm = tree_sum(squared_tree)
-  if squared:
-    return sqnorm
-  else:
-    return jnp.sqrt(sqnorm)
+  return sqnorm if squared else jnp.sqrt(sqnorm)
 
 
 def tree_zeros_like(tree_x):
@@ -211,8 +208,10 @@ def tree_mean(tree):
 
 def tree_single_dtype(tree):
   """The dtype for all values in e tree."""
-  dtypes = set(p.dtype for p in jax.tree_util.tree_leaves(tree)
-               if isinstance(p, jnp.ndarray))
+  dtypes = {
+      p.dtype
+      for p in jax.tree_util.tree_leaves(tree) if isinstance(p, jnp.ndarray)
+  }
   if not dtypes:
     return None
   if len(dtypes) == 1:

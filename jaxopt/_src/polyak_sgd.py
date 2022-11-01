@@ -140,11 +140,7 @@ class PolyakSGD(base.StochasticSolver):
     else:
       aux = None
 
-    if self.momentum == 0:
-      velocity = None
-    else:
-      velocity = tree_zeros_like(init_params)
-
+    velocity = None if self.momentum == 0 else tree_zeros_like(init_params)
     return PolyakSGDState(iter_num=jnp.asarray(0),
                           error=jnp.asarray(jnp.inf),
                           value=jnp.asarray(jnp.inf),

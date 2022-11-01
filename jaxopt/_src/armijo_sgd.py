@@ -235,11 +235,7 @@ class ArmijoSGD(base.StochasticSolver):
     Returns:
       state
     """
-    if self.momentum == 0:
-      velocity = None
-    else:
-      velocity = tree_zeros_like(init_params)
-
+    velocity = None if self.momentum == 0 else tree_zeros_like(init_params)
     if self.has_aux:
       _, aux = self.fun(init_params, *args, **kwargs)
     else:
@@ -321,12 +317,12 @@ class ArmijoSGD(base.StochasticSolver):
     if self.reset_option not in options:
       raise ValueError(f"'reset_option' should be one of {options}")
     if self.aggressiveness <= 0. or self.aggressiveness >= 1.:
-      raise ValueError(f"'aggressiveness' must belong to open interval (0,1)")
+      raise ValueError("'aggressiveness' must belong to open interval (0,1)")
 
     self._coef = 1 - self.aggressiveness
 
     fun_with_aux, _, self._value_and_grad_with_aux = \
-      base._make_funs_with_aux(fun=self.fun,
+        base._make_funs_with_aux(fun=self.fun,
                                value_and_grad=self.value_and_grad,
                                has_aux=self.has_aux)
 

@@ -54,12 +54,7 @@ class ProxTest(test_util.JaxoptTestCase):
     jac = jax.jacobian(prox.prox_lasso)(x, alpha)
     jac_exact = onp.zeros_like(jac)
     for i in range(len(x)):
-      if x[i] >= alpha:
-        jac_exact[i, i] = 1
-      elif x[i] <= -alpha:
-        jac_exact[i, i] = 1
-      else:
-        jac_exact[i, i] = 0
+      jac_exact[i, i] = 1 if x[i] >= alpha or x[i] <= -alpha else 0
     self.assertArraysAllClose(jac_exact, jac)
 
     # Check forward pass with array x and array alpha.

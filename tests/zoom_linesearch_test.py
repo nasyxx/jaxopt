@@ -21,11 +21,10 @@ class ZoomLinesearchTest(test_util.JaxoptTestCase):
     phi0 = phi(0)
     derphi0 = derphi(0)
     derphi1 = derphi(s)
-    msg = "s = {}; phi(0) = {}; phi(s) = {}; phi'(0) = {}; phi'(s) = {}; {}".format(
-      s, phi0, phi1, derphi0, derphi1, err_msg)
+    msg = f"s = {s}; phi(0) = {phi0}; phi(s) = {phi1}; phi'(0) = {derphi0}; phi'(s) = {derphi1}; {err_msg}"
 
-    self.assertTrue(phi1 <= phi0 + c1 * s * derphi0, "Wolfe 1 failed: " + msg)
-    self.assertTrue(abs(derphi1) <= abs(c2 * derphi0), "Wolfe 2 failed: " + msg)
+    self.assertTrue(phi1 <= phi0 + c1 * s * derphi0, f"Wolfe 1 failed: {msg}")
+    self.assertTrue(abs(derphi1) <= abs(c2 * derphi0), f"Wolfe 2 failed: {msg}")
 
   def assert_line_wolfe(self, x, p, s, f, fprime, **kw):
     self.assert_wolfe(s, phi=lambda sp: f(x + p * sp),

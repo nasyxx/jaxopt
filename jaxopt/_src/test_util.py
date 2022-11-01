@@ -48,10 +48,7 @@ def lasso_skl(X, y, lam, tol=1e-5, fit_intercept=False):
   """Return the solution found by sklearn's lasso solver."""
   lasso = linear_model.Lasso(fit_intercept=fit_intercept, alpha=lam, tol=tol)
   lasso = lasso.fit(X, y)
-  if fit_intercept:
-    return lasso.coef_, lasso.intercept_
-  else:
-    return lasso.coef_
+  return (lasso.coef_, lasso.intercept_) if fit_intercept else lasso.coef_
 
 
 def lasso_skl_jac(X, y, lam, tol=1e-5, fit_intercept=False, eps=1e-4):
@@ -72,10 +69,7 @@ def enet_skl(X, y, params_prox, tol=1e-5, fit_intercept=False):
   enet = linear_model.ElasticNet(fit_intercept=fit_intercept, alpha=alpha,
                                  l1_ratio=l1_ratio, tol=tol)
   enet = enet.fit(X, y)
-  if fit_intercept:
-    return enet.coef_, enet.intercept_
-  else:
-    return enet.coef_
+  return (enet.coef_, enet.intercept_) if fit_intercept else enet.coef_
 
 
 def enet_skl_jac(X, y, params_prox, tol=1e-5, fit_intercept=False, eps=1e-5):
@@ -168,8 +162,7 @@ def check_states_have_same_types(state1, state2):
 
   for attr1, attr2 in zip(state1._fields, state2._fields):
     if attr1 != attr2:
-      raise ValueError("Attribute names do not agree: %s and %s." % (attr1,
-                                                                     attr2))
+      raise ValueError(f"Attribute names do not agree: {attr1} and {attr2}.")
 
     type1 = type(getattr(state1, attr1)).__name__
     type2 = type(getattr(state2, attr2)).__name__
@@ -196,10 +189,7 @@ def _canonicalize_dtype(x64_enabled, dtype):
   except TypeError as e:
     raise TypeError(f'dtype {dtype!r} not understood') from e
 
-  if x64_enabled:
-    return dtype
-  else:
-    return _dtype_to_32bit_dtype.get(dtype, dtype)
+  return dtype if x64_enabled else _dtype_to_32bit_dtype.get(dtype, dtype)
 
 
 def canonicalize_dtype(dtype):

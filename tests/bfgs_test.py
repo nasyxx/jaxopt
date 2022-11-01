@@ -36,7 +36,7 @@ def _bfgs(fun, init, stepsize=1e-3, maxiter=500, tol=1e-3):
   H = I
   value, grad = value_and_grad_fun(init)
 
-  for it in range(maxiter):
+  for _ in range(maxiter):
     direction = -jnp.dot(H, grad)
     x_old, grad_old = x, grad
     x = x + stepsize * direction

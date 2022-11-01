@@ -100,12 +100,10 @@ class Bisection(base.IterativeSolver):
                      1,
                      jnp.where((lower_value > 0) & (upper_value <= 0), -1, 0))
 
-    if self.check_bracket:
-      # Not jittable...
-      if sign == 0:
-        raise ValueError("The root is not contained in [lower, upper]. "
-                         "`optimality_fun` evaluated at lower and upper should "
-                         "have opposite signs.")
+    if self.check_bracket and sign == 0:
+      raise ValueError("The root is not contained in [lower, upper]. "
+                       "`optimality_fun` evaluated at lower and upper should "
+                       "have opposite signs.")
 
     return BisectionState(iter_num=jnp.asarray(0),
                           value=jnp.asarray(jnp.inf),

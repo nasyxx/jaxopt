@@ -183,20 +183,19 @@ class ProximalGradient(base.IterativeSolver):
     else:
       aux = None
 
-    if self.acceleration:
-      state = ProxGradState(iter_num=jnp.asarray(0),
-                            velocity=init_params,
-                            t=jnp.asarray(1.0),
-                            stepsize=jnp.asarray(1.0),
-                            error=jnp.asarray(jnp.inf),
-                            aux=aux)
-    else:
-      state = ProxGradState(iter_num=jnp.asarray(0),
-                            stepsize=jnp.asarray(1.0),
-                            error=jnp.asarray(jnp.inf),
-                            aux=aux)
-
-    return state
+    return (ProxGradState(
+        iter_num=jnp.asarray(0),
+        velocity=init_params,
+        t=jnp.asarray(1.0),
+        stepsize=jnp.asarray(1.0),
+        error=jnp.asarray(jnp.inf),
+        aux=aux,
+    ) if self.acceleration else ProxGradState(
+        iter_num=jnp.asarray(0),
+        stepsize=jnp.asarray(1.0),
+        error=jnp.asarray(jnp.inf),
+        aux=aux,
+    ))
 
   def _error(self, x, x_fun_grad, hyperparams_prox):
     next_x = self._prox_grad(x, x_fun_grad, 1.0, hyperparams_prox)
@@ -228,7 +227,6 @@ class ProximalGradient(base.IterativeSolver):
       # Otherwise, we attempt to increase it.
       next_stepsize = jnp.where(next_stepsize <= 1e-6, 1.0,
                                 next_stepsize / self.decrease_factor)
-      return next_x, next_stepsize
     else:
       # without line search
       if isinstance(self.stepsize, Callable):
@@ -236,7 +234,8 @@ class ProximalGradient(base.IterativeSolver):
       else:
         next_stepsize = self.stepsize
       next_x = self._prox_grad(x, x_fun_grad, next_stepsize, hyperparams_prox)
-      return next_x, next_stepsize
+
+    return next_x, next_stepsize
 
   def _update(self, x, state, hyperparams_prox, args, kwargs):
     iter_num = state.iter_num

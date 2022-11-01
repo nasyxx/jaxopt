@@ -50,8 +50,7 @@ class DenseLinearOperator:
     return self.rmatvec(x, self.matvec(x))
 
   def diag(self):
-    diags_only = tree_map(jnp.diag, self.pytree)
-    return diags_only
+    return tree_map(jnp.diag, self.pytree)
 
   def columns_l2_norms(self, squared=False):
     def col_norm(w):

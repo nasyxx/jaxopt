@@ -78,8 +78,7 @@ def T(phi_cur, ti, y0, dx):
   """Fixed point iteration in the Picard method.
   See: https://en.wikipedia.org/wiki/Picard%E2%80%93Lindel%C3%B6f_theorem"""
   f_phi = f(ti, phi_cur)
-  phi_next = scipy.integrate.cumtrapz(f_phi, initial=y0, dx=dx)
-  return phi_next
+  return scipy.integrate.cumtrapz(f_phi, initial=y0, dx=dx)
 
 y0 = 0
 num_interpolating_points = 100
@@ -94,7 +93,7 @@ aa = AndersonAcceleration(T, history_size=5, maxiter=50, ridge=1e-5, jit=False)
 state = aa.init_state(phi0, ti, y0, dx)
 sol = phi0
 sols.append(sol)
-for k in range(aa.maxiter):
+for _ in range(aa.maxiter):
   sol, state = aa.update(phi0, state, ti, y0, dx)
   sols.append(sol)
 res = sols[-1] - np.tan(ti)

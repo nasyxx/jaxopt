@@ -41,8 +41,7 @@ def minimize_residuals(residual_gram, ridge):
   H = jnp.block([[jnp.zeros((1, 1)), jnp.ones((1, m))],
                   [ jnp.ones((m, 1)), residual_gram  ]])
   c = jnp.zeros((m+1)).at[0].set(1)
-  alphas = jnp.linalg.solve(H, c)
-  return alphas
+  return jnp.linalg.solve(H, c)
 
 
 def anderson_step(params_history, residuals_history,
@@ -57,8 +56,7 @@ def anderson_step(params_history, residuals_history,
   alphas = alphas[1:]  # drop dummy variable (constraint satisfaction)
   pa = tree_average(params_history, alphas)
   ra = tree_average(residuals_history, alphas)
-  extrapolated = tree_add_scalar_mul(pa, beta, ra)
-  return extrapolated
+  return tree_add_scalar_mul(pa, beta, ra)
 
 
 def pytree_replace_elem(tree_batched, index, new_elems):
