@@ -38,11 +38,11 @@ def _while_loop_python(cond_fun, body_fun, init_val, maxiter):
   """Python based implementation (no jit, reverse-mode autodiff ok)."""
   val = init_val
   for _ in range(maxiter):
-    cond = cond_fun(val)
-    if not cond:
+    if cond := cond_fun(val):
+      val = body_fun(val)
+    else:
       # When condition is met, break (not jittable).
       break
-    val = body_fun(val)
   return val
 
 
@@ -64,15 +64,11 @@ def while_loop(cond_fun, body_fun, init_val, maxiter, unroll=False, jit=False):
   """A while loop with a bounded number of iterations."""
 
   if unroll:
-    if jit:
-      fun = _while_loop_scan
-    else:
-      fun = _while_loop_python
+    fun = _while_loop_scan if jit else _while_loop_python
+  elif jit:
+    fun = _while_loop_lax
   else:
-    if jit:
-      fun = _while_loop_lax
-    else:
-      raise ValueError("unroll=False and jit=False cannot be used together")
+    raise ValueError("unroll=False and jit=False cannot be used together")
 
   if jit and fun is not _while_loop_lax:
     # jit of a lax while_loop is redundant, and this jit would only

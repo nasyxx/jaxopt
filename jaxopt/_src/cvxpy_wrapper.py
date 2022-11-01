@@ -144,7 +144,7 @@ class CvxpyQP(base.Solver):
     pb.solve(solver=self.solver)
 
     if pb.status in ["infeasible", "unbounded"]:
-        raise ValueError("The problem is %s." % pb.status)
+      raise ValueError(f"The problem is {pb.status}.")
 
     dual_eq = None if params_eq is None else jnp.array(pb.constraints[0].dual_value)
     dual_ineq = None if params_ineq is None else jnp.array(pb.constraints[-1].dual_value)
@@ -152,7 +152,7 @@ class CvxpyQP(base.Solver):
     sol = base.KKTSolution(primal=jnp.array(x.value),
                            dual_eq=dual_eq,
                            dual_ineq=dual_ineq)
-    
+
     # TODO(lbethune): pb.solver_stats is a "state" the user might be interested in.
     return base.OptStep(params=sol, state=None)
 

@@ -144,16 +144,8 @@ class BlockCoordinateDescentTest(test_util.JaxoptTestCase):
     data = (X, y)
 
     # Set up parameters.
-    if penalty == "l1":
-      block_prox = prox.prox_lasso
-    else:
-      block_prox = prox.prox_ridge
-
-    if multiclass:
-      fun = objective.multiclass_logreg
-    else:
-      fun = objective.binary_logreg
-
+    block_prox = prox.prox_lasso if penalty == "l1" else prox.prox_ridge
+    fun = objective.multiclass_logreg if multiclass else objective.binary_logreg
     l2reg = 1e-2
 
     # Run solver.

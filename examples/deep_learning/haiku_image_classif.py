@@ -99,8 +99,7 @@ def net_fun(batch, num_classes):
         jax.nn.relu,
         hk.Linear(num_classes),
     ])
-  y = model(x)
-  return y
+  return model(x)
 
 
 def main(argv):
@@ -174,7 +173,7 @@ def main(argv):
                        pre_update=print_accuracy)
 
   else:
-    raise ValueError("Unknown solver: %s" % FLAGS.solver)
+    raise ValueError(f"Unknown solver: {FLAGS.solver}")
 
   params = net.init(jax.random.PRNGKey(42), next(train_ds))
 

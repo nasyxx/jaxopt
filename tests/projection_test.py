@@ -85,12 +85,12 @@ class ProjectionTest(test_util.JaxoptTestCase):
 
         p = projection.projection_simplex(x)
         self.assertAllClose(jnp.sum(p), 1.0)
-        self.assertTrue(jnp.all(0 <= p))
+        self.assertTrue(jnp.all(p >= 0))
         self.assertTrue(jnp.all(p <= 1))
 
         p = projection.projection_simplex(x, 0.8)
         self.assertAllClose(jnp.sum(p), 0.8)
-        self.assertTrue(jnp.all(0 <= p))
+        self.assertTrue(jnp.all(p >= 0))
         self.assertTrue(jnp.all(p <= 0.8))
 
     # Check that -inf is supported.
@@ -130,13 +130,13 @@ class ProjectionTest(test_util.JaxoptTestCase):
     # Check with default s=1.0.
     P = jax.vmap(projection.projection_simplex)(X)
     self.assertArraysAllClose(jnp.sum(P, axis=1), jnp.ones(len(X)))
-    self.assertTrue(jnp.all(0 <= P))
+    self.assertTrue(jnp.all(P >= 0))
     self.assertTrue(jnp.all(P <= 1))
 
     # Check with s=0.8.
     P = jax.vmap(projection.projection_simplex)(X, 0.8 * jnp.ones(len(X)))
     self.assertArraysAllClose(jnp.sum(P, axis=1), 0.8 * jnp.ones(len(X)))
-    self.assertTrue(jnp.all(0 <= P))
+    self.assertTrue(jnp.all(P >= 0))
     self.assertTrue(jnp.all(P <= 0.8))
 
   def test_projection_simplex_vmap_diff(self):
@@ -383,7 +383,7 @@ class ProjectionTest(test_util.JaxoptTestCase):
     eps = 1.0
     K = onp.exp(-cost_matrix / eps)
     f = onp.zeros_like(marginals_a)
-    for it in range(maxiter):
+    for _ in range(maxiter):
       exp_f = onp.exp(f / eps)
       g = eps * onp.log(marginals_b) - eps * onp.log(K.T.dot(exp_f))
       exp_g = onp.exp(g / eps)

@@ -171,11 +171,7 @@ def solve_normal_cg(matvec: Callable,
   Returns:
     pytree with same structure as ``b``.
   """
-  if init is None:
-    example_x = b  # This assumes that matvec is a square linear operator.
-  else:
-    example_x = init
-
+  example_x = b if init is None else init
   try:
     rmatvec = _make_rmatvec(matvec, example_x)
   except TypeError:

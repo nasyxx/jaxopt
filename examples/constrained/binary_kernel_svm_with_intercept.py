@@ -53,7 +53,7 @@ FLAGS = flags.FLAGS
 
 
 def binary_kernel_svm_skl(X, y, C):
-  print(f"Solve SVM with sklearn.svm.SVC: ")
+  print("Solve SVM with sklearn.svm.SVC: ")
   K = jnp.dot(X, X.T)
   svc = svm.SVC(kernel="precomputed", C=C, tol=FLAGS.tol).fit(K, y)
   dual_coef = onp.zeros(K.shape[0])
@@ -62,7 +62,7 @@ def binary_kernel_svm_skl(X, y, C):
 
 
 def binary_kernel_svm_pg(X, y, C):
-  print(f"Solve SVM with Projected Gradient: ")
+  print("Solve SVM with Projected Gradient: ")
 
   def objective_fun(beta, X, y):
     """Dual objective of binary kernel SVMs with intercept."""
@@ -105,11 +105,11 @@ def binary_kernel_svm_osqp(X, y, C):
   # -C <= beta_i <= 0 if y_i = -1
   # where C = 1.0 / lam
 
-  print(f"Solve SVM with OSQP: ")
+  print("Solve SVM with OSQP: ")
 
   def matvec_Q(X, beta):
     return jnp.dot(X, jnp.dot(X.T,  beta))
-  
+
   # There qre two types of constraints:
   #   0 <= y_i * beta_i <= C     (1)
   # and:
@@ -120,7 +120,7 @@ def binary_kernel_svm_osqp(X, y, C):
   # We return a tuple whose entries correspond each type of constraint.
   def matvec_A(_, beta):
     return beta, jnp.sum(beta)
-  
+
   # l, u must have same shape than matvec_A's output.
   l = -jax.nn.relu(-y * C), 0.
   u =  jax.nn.relu( y * C), 0.

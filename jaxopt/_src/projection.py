@@ -157,13 +157,11 @@ def _projection_unit_sparse_simplex(
   max_nz_simplex_projection = jax.nn.relu(
       1 / idx + (max_nz_values - cumsum_max_nz_values[idx - 1] / idx))
 
-  # Put the projection of max_nz_values to their original indices;
-  # set all other indices zero.
-  sparse_simplex_projection = jnp.sum(
-      max_nz_simplex_projection[ :, jnp.newaxis] * jax.nn.one_hot(
-          max_nz_indices, len(x), dtype=x.dtype), axis=0)
-
-  return  sparse_simplex_projection
+  return jnp.sum(
+      max_nz_simplex_projection[:, jnp.newaxis] * jax.nn.one_hot(
+          max_nz_indices, len(x), dtype=x.dtype),
+      axis=0,
+  )
 
 @_projection_unit_sparse_simplex.defjvp
 def _projection_unit_sparse_simplex_jvp(
@@ -483,10 +481,7 @@ _max_ent_grad_vmap = jax.vmap(jax.grad(_max_ent), in_axes=(1, 0, None))
 
 
 def _delta_l2(x, gamma=1.0):
-  # Solution to Eqn. (6) in https://arxiv.org/abs/1710.06276 with squared l2
-  # regularization (see Table 1 in the paper).
-  z = (0.5 / gamma) * jnp.dot(jax.nn.relu(x), jax.nn.relu(x))
-  return z
+  return (0.5 / gamma) * jnp.dot(jax.nn.relu(x), jax.nn.relu(x))
 
 
 def _delta_ent(x, gamma):
@@ -591,9 +586,7 @@ def _regularized_transport_semi_dual(cost_matrix,
 
   # Optimal primal transportation plan.
   X = alpha[:, jnp.newaxis] - cost_matrix
-  P = max_grad_vmap(X, marginals_b, gamma).T * marginals_b
-
-  return P
+  return max_grad_vmap(X, marginals_b, gamma).T * marginals_b
 
 
 def _regularized_transport_dual(cost_matrix,
@@ -653,8 +646,7 @@ def _regularized_transport_dual(cost_matrix,
   beta_row = beta[jnp.newaxis, :]
   # The (i,j)-th entry of dual_constraint_matrix is alpha[i] + beta[j] - c[i,j].
   dual_constraint_matrix = alpha_column + beta_row - cost_matrix
-  plan = delta_grad_vmap(dual_constraint_matrix, gamma).T
-  return plan
+  return delta_grad_vmap(dual_constraint_matrix, gamma).T
 
 
 def projection_transport(sim_matrix: jnp.ndarray,
@@ -708,21 +700,21 @@ def projection_transport(sim_matrix: jnp.ndarray,
   """
   marginals_a, marginals_b = marginals
 
-  if use_semi_dual:
-    plan = _regularized_transport_semi_dual(cost_matrix=-sim_matrix,
-                                  marginals_a=marginals_a,
-                                  marginals_b=marginals_b,
-                                  make_solver=make_solver,
-                                  max_vmap=_max_l2_vmap,
-                                  max_grad_vmap=_max_l2_grad_vmap)
-  else:
-    plan = _regularized_transport_dual(cost_matrix=-sim_matrix,
-                                       marginals_a=marginals_a,
-                                       marginals_b=marginals_b,
-                                       make_solver=make_solver,
-                                       delta_vmap=_delta_l2_vmap,
-                                       delta_grad_vmap=_delta_l2_grad_vmap)
-  return plan
+  return (_regularized_transport_semi_dual(
+      cost_matrix=-sim_matrix,
+      marginals_a=marginals_a,
+      marginals_b=marginals_b,
+      make_solver=make_solver,
+      max_vmap=_max_l2_vmap,
+      max_grad_vmap=_max_l2_grad_vmap,
+  ) if use_semi_dual else _regularized_transport_dual(
+      cost_matrix=-sim_matrix,
+      marginals_a=marginals_a,
+      marginals_b=marginals_b,
+      make_solver=make_solver,
+      delta_vmap=_delta_l2_vmap,
+      delta_grad_vmap=_delta_l2_grad_vmap,
+  ))
 
 
 def kl_projection_transport(sim_matrix: jnp.ndarray,
@@ -775,23 +767,21 @@ def kl_projection_transport(sim_matrix: jnp.ndarray,
   """
   marginals_a, marginals_b = marginals
 
-  if use_semi_dual:
-    plan = _regularized_transport_semi_dual(
-        cost_matrix=-sim_matrix,
-        marginals_a=marginals_a,
-        marginals_b=marginals_b,
-        make_solver=make_solver,
-        max_vmap=_max_ent_vmap,
-        max_grad_vmap=_max_ent_grad_vmap)
-  else:
-    plan = _regularized_transport_dual(
-        cost_matrix=-sim_matrix,
-        marginals_a=marginals_a,
-        marginals_b=marginals_b,
-        make_solver=make_solver,
-        delta_vmap=_delta_ent_vmap,
-        delta_grad_vmap=_delta_ent_grad_vmap)
-  return plan
+  return (_regularized_transport_semi_dual(
+      cost_matrix=-sim_matrix,
+      marginals_a=marginals_a,
+      marginals_b=marginals_b,
+      make_solver=make_solver,
+      max_vmap=_max_ent_vmap,
+      max_grad_vmap=_max_ent_grad_vmap,
+  ) if use_semi_dual else _regularized_transport_dual(
+      cost_matrix=-sim_matrix,
+      marginals_a=marginals_a,
+      marginals_b=marginals_b,
+      make_solver=make_solver,
+      delta_vmap=_delta_ent_vmap,
+      delta_grad_vmap=_delta_ent_grad_vmap,
+  ))
 
 
 def projection_birkhoff(sim_matrix: jnp.ndarray,

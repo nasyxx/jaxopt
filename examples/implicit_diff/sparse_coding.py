@@ -241,9 +241,7 @@ def _task_sparse_dictionary_learning(
       # Normalize dictionary before returning it.
       dic, task_vars = prox_dic(params, None, None)
 
-  if has_task:
-    return dic, task_vars
-  return dic
+  return (dic, task_vars) if has_task else dic
 
 
 def sparse_coding(dic, params, reconstruction_loss_fun=None,
@@ -264,9 +262,8 @@ def sparse_coding(dic, params, reconstruction_loss_fun=None,
       prox=prox.prox_elastic_net,
       **sparse_coding_kw)
 
-  codes = solver.run(codes_init, [regularization, elastic_penalty],
-                     dic, data).params
-  return codes
+  return solver.run(codes_init, [regularization, elastic_penalty], dic,
+                    data).params
 
 
 def main(argv):

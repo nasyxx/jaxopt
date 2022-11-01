@@ -79,11 +79,7 @@ def _make_funs_with_aux(fun: Callable,
 
   else:
     # Case when `fun` is just a scalar-valued function.
-    if has_aux:
-      fun_ = fun
-    else:
-      fun_ = lambda p, *a, **kw: (fun(p, *a, **kw), None)
-
+    fun_ = fun if has_aux else (lambda p, *a, **kw: (fun(p, *a, **kw), None))
     value_and_grad_fun = jax.value_and_grad(fun_, has_aux=True)
 
   def grad_fun(*a, **kw):
@@ -157,12 +153,7 @@ class IterativeSolver(Solver):
   def _get_loop_options(self):
     """Returns jit and unroll options based on user-provided attributes."""
 
-    if self.jit == "auto":
-      # We always jit unless verbose mode is enabled.
-      jit = not self.verbose
-    else:
-      jit = self.jit
-
+    jit = not self.verbose if self.jit == "auto" else self.jit
     if self.unroll == "auto":
       # We unroll when implicit diff is disabled or when jit is disabled.
       unroll = not getattr(self, "implicit_diff", True) or not jit
@@ -254,8 +245,7 @@ class IterativeSolver(Solver):
 
 def _where(cond, x, y):
   if x is None: return y
-  if y is None: return x
-  return jnp.where(cond, x, y)
+  return x if y is None else jnp.where(cond, x, y)
 
 
 class StochasticSolver(IterativeSolver):

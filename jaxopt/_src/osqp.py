@@ -419,7 +419,7 @@ class BoxOSQP(base.IterativeSolver):
     init_y = tree_zeros_like(init_z)
     return base.KKTSolution((init_x, init_z), init_y, (init_y, init_y))
 
-  def _get_full_KKT_solution(primal, y):
+  def _get_full_KKT_solution(self, y):
     """Returns all dual variables of the problem."""
     # Unfortunately BoxOSQP algorithm only returns y as dual variable,
     # mu and phi are missing, but can be recovered:
@@ -437,7 +437,7 @@ class BoxOSQP(base.IterativeSolver):
     phi = tree_map(lambda yi: jax.nn.relu(-yi), y)  # derivative = 0 in y = 0
     # y = mu - phi
     # d_y = d_mu - d_phi = 1 (everywhere; including in zero)
-    return base.KKTSolution(primal=primal, dual_eq=y, dual_ineq=(mu, phi))
+    return base.KKTSolution(self=self, dual_eq=y, dual_ineq=(mu, phi))
 
   def _update_stepsize(self, rho_bar, solver_state, primal_residuals, dual_residuals, Q, c, A, x, y):
     """Update stepsize based on the ratio between primal and dual residuals."""
@@ -638,9 +638,9 @@ class BoxOSQP(base.IterativeSolver):
 
     if not jit:
       if status == BoxOSQP.PRIMAL_INFEASIBLE:
-        raise ValueError(f"Primal infeasible.")
+        raise ValueError("Primal infeasible.")
       if status == BoxOSQP.DUAL_INFEASIBLE:
-        raise ValueError(f"Dual infeasible.")
+        raise ValueError("Dual infeasible.")
 
     state = BoxOSQPState(iter_num=state.iter_num+1,
                          error=error,
